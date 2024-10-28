@@ -203,16 +203,42 @@ def server_program():
     server_socket.listen(2)
     conn, address = server_socket.accept()
     print("Connection from:", address)
+    
+    key = "abcd1234"  # Kunci enkripsi yang digunakan oleh server dan client
 
-    data = conn.recv(2048).decode()
-    key, message = data.split('|')
-    print(f"Pesan asli dari client: {message}")
-    print(f"Key yang diterima dari client: {key}")
+    while True:
+        # Terima pesan terenkripsi dari client
+        encrypted_message = conn.recv(2048).decode()
+        if not encrypted_message:
+            break
 
-    cipher_bits = des_encrypt(message, key)
-    print("Hasil enkripsi (bit array):", cipher_bits)
-    decrypted_text = des_decrypt(cipher_bits, key)
-    print(f"Teks setelah didekripsi: {decrypted_text}")
+        # Dekripsi pesan dari client
+        cipher_bits = [int(bit) for bit in encrypted_message]
+        decrypted_message = des_decrypt(cipher_bits, key)
+        print(f"Pesan terenkripsi yang diterima dari client: {encrypted_message}")
+        print(f"Pesan didekripsi dari client: {decrypted_message}")
+
+        # Akhiri jika client mengirim 'exit'
+        if decrypted_message.lower() == 'exit':
+            print("Mengakhiri koneksi dengan client.")
+            break
+
+        # Masukkan balasan server, enkripsi, lalu kirim ke client
+        server_message = input("Server, masukkan pesan untuk client: ")
+        encrypted_response = des_encrypt(server_message, key)
+        encrypted_response_bits = ''.join(map(str, encrypted_response))
+        
+        # Menampilkan hasil enkripsi di sisi server sebelum dikirim ke client
+        print(f"Hasil enkripsi pesan server: {encrypted_response_bits}")
+        
+        # Kirim pesan terenkripsi ke client
+        conn.send(encrypted_response_bits.encode())
+        print(f"Pesan terenkripsi dikirim ke client: {encrypted_response_bits}")
+
+        # Akhiri jika server mengirim 'exit'
+        if server_message.lower() == 'exit':
+            print("Mengakhiri koneksi dengan client.")
+            break
 
     conn.close()
 
