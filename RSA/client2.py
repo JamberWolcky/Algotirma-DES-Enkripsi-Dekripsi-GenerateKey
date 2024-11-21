@@ -1,5 +1,5 @@
 import socket
-from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives.asymmetric import padding, rsa
 from cryptography.hazmat.primitives import serialization, hashes
 from des import des_encrypt, des_decrypt
 
@@ -12,8 +12,13 @@ def client2_program():
     # Receive RSA public key from server
     serialized_public_key = client_socket.recv(2048)
     public_key = serialization.load_pem_public_key(serialized_public_key)
-    print(f"Received public key from server: {public_key}")
-
+    if isinstance(public_key, rsa.RSAPublicKey):
+        # Extract the public numbers
+        public_numbers = public_key.public_numbers()
+        print(f"e: {public_numbers.e}")
+        print(f"n: {public_numbers.n}")
+    else:
+        print("The public key is not an RSA key.")
     # DES key
     des_key = "wxyz5678"  # Unique key for this client
 
@@ -55,7 +60,7 @@ def client2_program():
             sender, encrypted_response = data.split(':', 1)
             cipher_bits_response = [int(bit) for bit in encrypted_response]
             decrypted_response = des_decrypt(cipher_bits_response, des_key)
-            print(f"Response from {sender}: {decrypted_response}")
+            print(f"Response from {decrypted_response}")
 
     client_socket.close()
 
