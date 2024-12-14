@@ -9,6 +9,6 @@
 
 #### How To
 
-- run server.py pada folder RSA
-- run client1.py pada folder RSA
-- run client2.py pada folder RSA
+- run server.py 
+- run client.py 
+- run client2.py 
